@@ -1,5 +1,6 @@
-import { html, ref, slotted } from "@microsoft/fast-element";
+import { html, ref, slotted, when } from "@microsoft/fast-element";
 import type { ViewTemplate } from "@microsoft/fast-element";
+import { AnchoredRegion } from "../anchored-region";
 import { Listbox } from "../listbox/listbox";
 import { endSlotTemplate, startSlotTemplate } from "../patterns/start-end";
 import type { ElementDefinitionContext } from "../design-system";
@@ -50,6 +51,23 @@ export const selectTemplate: (
             </slot>
             ${endSlotTemplate(context, definition)}
         </div>
+        ${when(
+            x => x.open,
+            html<Select>`
+                <${context.tagFor(AnchoredRegion)}
+                class="region"
+                auto-update-mode="auto"
+                fixed-placement="true"
+                vertical-positioning-mode="locktodefault"
+                vertical-default-position="bottom"
+                vertical-scaling="content"
+                vertical-inset="false"
+                horizontal-positioning-mode="locktodefault"
+                horizontal-default-position="right"
+                horizontal-scaling="anchor"
+                horizontal-inset="true"
+                ${ref("region")}
+            >
         <div
             aria-disabled="${x => x.disabled}"
             class="listbox"
@@ -68,5 +86,8 @@ export const selectTemplate: (
                 })}
             ></slot>
         </div>
+        </${context.tagFor(AnchoredRegion)}>
+        `
+        )}
     </template>
 `;

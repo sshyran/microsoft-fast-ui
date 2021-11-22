@@ -72,13 +72,8 @@ export const selectStyles: (
         max-height: calc(var(--max-height) - (${heightNumber} * 1px));
         padding: calc(${designUnit} * 1px) 0;
         overflow-y: auto;
-        position: absolute;
         width: 100%;
         z-index: 1;
-    }
-
-    .listbox[hidden] {
-        display: none;
     }
 
     .control {
@@ -168,13 +163,11 @@ export const selectStyles: (
     }
 
     slot[name="listbox"] {
-        display: none;
         width: 100%;
     }
 
     :host([open]) slot[name="listbox"] {
         display: flex;
-        position: absolute;
         ${elevation}
     }
 

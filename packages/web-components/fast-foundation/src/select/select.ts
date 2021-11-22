@@ -1,10 +1,12 @@
 import {
     attr,
+    DOM,
     Observable,
     observable,
     SyntheticViewTemplate,
 } from "@microsoft/fast-element";
 import type { FoundationElementDefinition } from "../foundation-element";
+import type { AnchoredRegion } from "../anchored-region";
 import type { ListboxOption } from "../listbox-option/listbox-option";
 import { ARIAGlobalStatesAndProperties } from "../patterns/aria-global";
 import { StartEnd, StartEndOptions } from "../patterns/start-end";
@@ -38,11 +40,21 @@ export class Select extends FormAssociatedSelect {
     protected openChanged() {
         this.ariaExpanded = this.open ? "true" : "false";
         if (this.open) {
-            this.setPositioning();
-            this.focusAndScrollOptionIntoView();
-            this.indexWhenOpened = this.selectedIndex;
+            DOM.queueUpdate(() => {
+                this.setRegionProps();
+                //this.setPositioning();
+                this.focusAndScrollOptionIntoView();
+                this.indexWhenOpened = this.selectedIndex;
+            });
         }
     }
+
+    /**
+     * reference to the anchored region element
+     *
+     * @internal
+     */
+    public region: AnchoredRegion;
 
     private indexWhenOpened: number;
 
@@ -173,23 +185,35 @@ export class Select extends FormAssociatedSelect {
      * @public
      */
     public setPositioning(): void {
-        const currentBox = this.getBoundingClientRect();
-        const viewportHeight = window.innerHeight;
-        const availableBottom = viewportHeight - currentBox.bottom;
-
-        this.position = this.forcedPosition
-            ? this.positionAttribute
-            : currentBox.top > availableBottom
-            ? SelectPosition.above
-            : SelectPosition.below;
-
-        this.positionAttribute = this.forcedPosition
-            ? this.positionAttribute
-            : this.position;
-
-        this.maxHeight =
-            this.position === SelectPosition.above ? ~~currentBox.top : ~~availableBottom;
+        // const currentBox = this.getBoundingClientRect();
+        // const viewportHeight = window.innerHeight;
+        // const availableBottom = viewportHeight - currentBox.bottom;
+        // this.position = this.forcedPosition
+        //     ? this.positionAttribute
+        //     : currentBox.top > availableBottom
+        //     ? SelectPosition.above
+        //     : SelectPosition.below;
+        // this.positionAttribute = this.forcedPosition
+        //     ? this.positionAttribute
+        //     : this.position;
+        // this.maxHeight =
+        //     this.position === SelectPosition.above ? ~~currentBox.top : ~~availableBottom;
     }
+
+    /**
+     * Sets properties on the anchored region once it is instanciated.
+     */
+    private setRegionProps = (): void => {
+        if (!this.open) {
+            return;
+        }
+        if (this.region === null || this.region === undefined) {
+            // TODO: limit this
+            DOM.queueUpdate(this.setRegionProps);
+            return;
+        }
+        this.region.anchorElement = this;
+    };
 
     /**
      * The max height for the listbox when opened.
