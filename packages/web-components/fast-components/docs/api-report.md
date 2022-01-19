@@ -1304,6 +1304,9 @@ template: FoundationElementTemplate<ViewTemplate<TreeView, any>, FoundationEleme
 styles: FoundationElementTemplate<ElementStyles, FoundationElementDefinition>;
 }, typeof TreeView>;
 
+// @beta
+export const fastVirtualList: (overrideDefinition?: import("@microsoft/fast-foundation").OverrideFoundationElementDefinition<import("@microsoft/fast-foundation").FoundationElementDefinition> | undefined) => import("@microsoft/fast-foundation").FoundationElementRegistry<import("@microsoft/fast-foundation").FoundationElementDefinition, typeof VirtualList>;
+
 // @public (undocumented)
 export const fillColor: CSSDesignToken<Swatch>;
 

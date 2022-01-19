@@ -52,25 +52,42 @@ import {
     fastPickerListItem,
     fastPickerMenu,
     fastPickerMenuOption,
-} from "./picker/index.js";
-import { fastProgressRing } from "./progress-ring/index.js";
-import { fastProgress } from "./progress/index.js";
-import { fastRadioGroup } from "./radio-group/index.js";
-import { fastRadio } from "./radio/index.js";
-import { fastSearch } from "./search/index.js";
-import { fastSelect } from "./select/index.js";
-import { fastSkeleton } from "./skeleton/index.js";
-import { fastSliderLabel } from "./slider-label/index.js";
-import { fastSlider } from "./slider/index.js";
-import { fastSwitch } from "./switch/index.js";
-import { fastTab, fastTabPanel, fastTabs } from "./tabs/index.js";
-import { fastTextArea } from "./text-area/index.js";
-import { fastTextField } from "./text-field/index.js";
-import { fastToolbar } from "./toolbar/index.js";
-import { fastTooltip } from "./tooltip/index.js";
-import { fastTreeItem } from "./tree-item/index.js";
-import { fastTreeView } from "./tree-view/index.js";
+} from "./picker/index";
+import { fastProgressRing } from "./progress-ring/index";
+import { fastProgress } from "./progress/index";
+import { fastRadioGroup } from "./radio-group/index";
+import { fastRadio } from "./radio/index";
+import { fastSearch } from "./search/index";
+import { fastSelect } from "./select/index";
+import { fastSkeleton } from "./skeleton/index";
+import { fastSliderLabel } from "./slider-label/index";
+import { fastSlider } from "./slider/index";
+import { fastSwitch } from "./switch/index";
+import { fastTab, fastTabPanel, fastTabs } from "./tabs/index";
+import { fastTextArea } from "./text-area/index";
+import { fastTextField } from "./text-field/index";
+import { fastToolbar } from "./toolbar/index";
+import { fastTooltip } from "./tooltip/index";
+import { fastTreeItem } from "./tree-item/index";
+import { fastTreeView } from "./tree-view/index";
+import { fastVirtualList } from "./virtual-list/index";
 
+// Don't delete these. They're needed so that API-extractor doesn't add import types
+// with improper pathing
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import type { Anchor } from "./anchor/index";
+import type { Button } from "./button/index";
+import type { Card } from "./card/index";
+import type { DesignSystemProvider } from "./design-system-provider/index";
+import type { Disclosure } from "./disclosure/index";
+import type { HorizontalScroll } from "./horizontal-scroll/index";
+import type { Listbox } from "./listbox/index";
+import type { Search } from "./search/index";
+import type { SliderLabel } from "./slider-label/index";
+import type { TextArea } from "./text-area/index";
+import type { TextField } from "./text-field/index";
+import type { Toolbar } from "./toolbar/index";
+import type { VirtualList } from "./virtual-list/index";
 /* eslint-enable @typescript-eslint/no-unused-vars */
 
 // When adding new components, make sure to add the component to the `allComponents` object
@@ -130,6 +147,7 @@ export {
     fastToolbar,
     fastTreeView,
     fastTreeItem,
+    fastVirtualList,
 };
 
 /**
@@ -191,6 +209,7 @@ export const allComponents = {
     fastToolbar,
     fastTreeView,
     fastTreeItem,
+    fastVirtualList,
     register(container?: Container, ...rest: any[]) {
         if (!container) {
             // preserve backward compatibility with code that loops through

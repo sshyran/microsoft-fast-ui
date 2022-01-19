@@ -2364,6 +2364,16 @@ export type SliderOptions = FoundationElementDefinition & {
 // @public
 export const sliderTemplate: FoundationElementTemplate<ViewTemplate<Slider>, SliderOptions>;
 
+// @public (undocumented)
+export interface SpanMap {
+    // (undocumented)
+    end: number;
+    // (undocumented)
+    span: number;
+    // (undocumented)
+    start: number;
+}
+
 // @public
 export class StartEnd {
     // (undocumented)
@@ -2777,6 +2787,61 @@ export function validateKey(key: any): void;
 
 // @public
 export type VerticalPosition = "top" | "bottom" | "center" | "unset";
+
+// @public
+export class VirtualList extends FoundationElement {
+    // (undocumented)
+    protected allowLayoutUpdateDelay: boolean;
+    // @beta
+    autoUpdateMode: VirtualListAutoUpdateMode;
+    // @internal (undocumented)
+    connectedCallback(): void;
+    // @internal
+    containerElement: HTMLDivElement;
+    // @internal (undocumented)
+    disconnectedCallback(): void;
+    // @internal
+    endSpacerSpan: number;
+    // @internal
+    firstRenderedIndex: number;
+    getGeneratedItemPosition: (itemIndex: number) => number;
+    // @internal
+    handleChange(source: any, splices: Splice[]): void;
+    items: object[];
+    // @beta
+    itemSpan: number;
+    itemTemplate: ViewTemplate;
+    // @internal
+    lastRenderedIndex: number;
+    // @beta
+    layoutUpdateDelay: number;
+    // @beta
+    orientation: Orientation;
+    requestPositionUpdates: () => void;
+    protected reset(): void;
+    spanMap: SpanMap[];
+    // @internal
+    startSpacerSpan: number;
+    // @internal
+    totalStackSpan: number;
+    update(): void;
+    // @beta
+    viewport: string;
+    // @beta
+    viewportBuffer: number;
+    // @beta
+    viewportElement: HTMLElement;
+    // @beta
+    virtualize: boolean;
+    // @internal
+    visibleItems: any[];
+    }
+
+// @beta
+export type VirtualListAutoUpdateMode = "manual" | "viewport-resize" | "auto";
+
+// @public
+export const virtualListTemplate: (context: ElementDefinitionContext, definition: FoundationElementDefinition) => ViewTemplate<VirtualList>;
 
 // @public
 export type WeekdayFormat = "long" | "narrow" | "short";
