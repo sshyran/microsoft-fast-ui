@@ -1,0 +1,14 @@
+{
+  "name": "client-side-style-render",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "run": "node server.js"
+  },
+  "author": "Microsoft",
+  "license": "MIT",
+  "devDependencies": {
+    "express": "^4.17.2"
+  }
+}
