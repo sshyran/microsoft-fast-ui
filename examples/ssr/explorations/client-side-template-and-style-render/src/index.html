@@ -29,6 +29,60 @@
 
             customElements.define("fast-style", FASTStyle);
         </script>
+        <script defer>
+            /**
+             * This transformer takes binary Uint8Array chunks from a `fetch`
+             * and translates them to chunks of strings.
+             *
+             * @implements {TransformStreamTransformer}
+             */
+            class Uint8ArrayToStringsTransformer {
+                constructor() {
+                    this.decoder = new TextDecoder();
+                    this.lastString = "";
+                }
+
+                /**
+                 * Receives the next Uint8Array chunk from `fetch` and transforms it.
+                 *
+                 * @param {Uint8Array} chunk The next binary data chunk.
+                 * @param {TransformStreamDefaultController} controller The controller to enqueue the transformed chunks to.
+                 */
+                transform(chunk, controller) {
+                    console.log(
+                        "Received chunk %o with %d bytes.",
+                        chunk,
+                        chunk.byteLength
+                    );
+
+                    // Decode the current chunk to string and prepend the last string
+                    const string = `${this.lastString}${this.decoder.decode(chunk)}`;
+
+                    // Extract lines from chunk
+                    const lines = string.split(/\r\n|[\r\n]/g);
+
+                    // Save last line, as it might be incomplete
+                    this.lastString = lines.pop() || "";
+
+                    // Enqueue each line in the next chunk
+                    for (const line of lines) {
+                        controller.enqueue(line);
+                    }
+                }
+
+                /**
+                 * Is called when `fetch` has finished writing to this transform stream.
+                 *
+                 * @param {TransformStreamDefaultController} controller The controller to enqueue the transformed chunks to.
+                 */
+                flush(controller) {
+                    // Is there still a line left? Enqueue it
+                    if (this.lastString) {
+                        controller.enqueue(this.lastString);
+                    }
+                }
+            }
+        </script>
     </head>
 
     <body
@@ -220,8 +274,8 @@
                         </template>
                     </fast-button>
                 </div>
-                <script type="module">
-                    import ViewTemplate from "../../../../../packages/web-components/fast-element/dist/esm/templating/template.js";
+                <script>
+                    // import ViewTemplate from "../../../../../packages/web-components/fast-element/dist/esm/templating/template.js";
 
                     // TODO:
                     // 1. find a way to run a template that registers the component
@@ -238,6 +292,35 @@
                     //         inline css
                     //     </fast-style>
                     // `);
+
+                    async function getData() {
+                        const ts = new TransformStream(
+                            new Uint8ArrayToStringsTransformer()
+                        );
+                        const response = await fetch("/api");
+                        const readableStream = response.body;
+                        const lineStream = readableStream.pipeThrough(ts);
+                        const reader = lineStream.getReader();
+
+                        while (true) {
+                            const { done, value } = await reader.read();
+
+                            if (done) {
+                                break;
+                            }
+
+                            console.log(
+                                "===========================VALUE==========================="
+                            );
+                            console.log(value);
+                        }
+                    }
+
+                    getData().catch(() => {
+                        if (typeof TransformStream === "undefined") {
+                            console.error("TransformStream is undefined");
+                        }
+                    });
                 </script>
             </template>
         </fast-card>

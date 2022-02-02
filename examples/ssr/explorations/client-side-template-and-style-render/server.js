@@ -1,10 +1,34 @@
-const express = require("express");
+var http = require("http");
+var fs = require("fs");
 
-const app = express();
-const port = "3000";
+const routes = {
+    api: "/api",
+};
+var server = http.createServer((request, response) => {
+    switch (request.url) {
+        case routes.api: {
+            var readStream = fs.createReadStream(`${__dirname}/src/data.json`, "utf8");
+            response.writeHead(200, { "Content-Type": "application/json" });
 
-app.use(express.static("src"));
+            /**
+             * Pipe the card data to a writable stream
+             * to the response
+             */
+            readStream.pipe(response);
+            break;
+        }
+        default: {
+            var readStream = fs.createReadStream(`${__dirname}/src/index.html`, "utf8");
 
-app.listen(port, () => {
-    console.log("example app listening on port 3000");
+            response.writeHead(200, { "Content-Type": "text/html" });
+            /**
+             * Pipe from a readable stream to a writable stream
+             * to the response
+             */
+            readStream.pipe(response);
+            break;
+        }
+    }
 });
+
+server.listen(3000, "127.0.0.1");

@@ -9,6 +9,5 @@
   "author": "Microsoft",
   "license": "MIT",
   "devDependencies": {
-    "express": "^4.17.2"
   }
 }
