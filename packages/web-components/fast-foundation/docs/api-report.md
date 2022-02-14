@@ -2809,13 +2809,13 @@ export class VirtualList extends FoundationElement {
     getGeneratedItemPosition(itemIndex: number): number;
     // @internal
     handleChange(source: any, splices: Splice[]): void;
-    itemContentsTemplate: ViewTemplate;
     items: object[];
     // @beta
     itemSpan: number;
     itemTemplate: ViewTemplate;
     // @internal
     lastRenderedIndex: number;
+    listItemContext: object;
     // @beta
     orientation: Orientation;
     requestPositionUpdates(): void;
@@ -2829,7 +2829,6 @@ export class VirtualList extends FoundationElement {
     viewport: string;
     // @beta
     viewportBuffer: number;
-    // @beta
     viewportElement: HTMLElement;
     // @beta
     virtualize: boolean;
@@ -2846,16 +2845,26 @@ export type VirtualListAutoUpdateMode = "manual" | "viewport-resize" | "auto";
 export class VirtualListItem extends FoundationElement {
     // @internal (undocumented)
     connectedCallback(): void;
-    contentTemplate: ViewTemplate;
-    // @internal
-    defaultContentsTemplate: ViewTemplate;
     // @internal (undocumented)
     disconnectedCallback(): void;
     itemData: object;
-    }
+    listItemContext: VirtualListItemContext;
+    // @internal (undocumented)
+    resolveTemplate(): ViewTemplate;
+    // (undocumented)
+    shouldLoad: boolean;
+}
+
+// @public (undocumented)
+export interface VirtualListItemContext {
+    // (undocumented)
+    listItemTemplate: ViewTemplate;
+    // (undocumented)
+    loadMode: VirtualListLoadMode;
+}
 
 // @public
-export const virtualListItemTemplate: FoundationElementTemplate<ViewTemplate<VirtualListItem>>;
+export type VirtualListLoadMode = "none" | "idle";
 
 // @public
 export const virtualListTemplate: FoundationElementTemplate<ViewTemplate<VirtualList>>;
