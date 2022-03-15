@@ -28,6 +28,8 @@ const defaultRowItemTemplate = html`
 
 const customRowItemTemplate = html`
     <fast-data-grid-row
+        @click="${(x, c) => rowClick(c.parent, c.event as Event)}"
+        aria-selected="false"
         :rowData="${x => x}"
         :cellItemTemplate="${(x, c) => c.parent.cellItemTemplate}"
         :headerCellItemTemplate="${(x, c) => c.parent.headerCellItemTemplate}"
@@ -400,6 +402,15 @@ function cellTemplateButtonClick(cell: DataGridCell): void {
 
     if (rowIndex > -1) {
         defaultGridElement.rowsData.splice(rowIndex, 1, newRowData);
+    }
+}
+
+function rowClick(row: DataGridRow, event: Event): void {
+    const isSelected: boolean = row.getAttribute("aria-selected") === "true";
+    if (isSelected) {
+        row.setAttribute("aria-selected", "false");
+    } else {
+        row.setAttribute("aria-selected", "true");
     }
 }
 
