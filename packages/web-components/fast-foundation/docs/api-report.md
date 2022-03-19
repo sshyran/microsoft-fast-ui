@@ -622,6 +622,8 @@ export const darkModeStylesheetBehavior: (styles: ElementStyles) => MatchMediaSt
 export class DataGrid extends FoundationElement {
     constructor();
     cellItemTemplate?: ViewTemplate;
+    // (undocumented)
+    clickSelect: boolean;
     columnDefinitions: ColumnDefinition[] | null;
     // @internal (undocumented)
     connectedCallback(): void;
@@ -635,6 +637,8 @@ export class DataGrid extends FoundationElement {
     generateHeader: GenerateHeaderOptions | "none" | "default" | "sticky";
     gridTemplateColumns: string;
     // @internal (undocumented)
+    handleClick(e: MouseEvent): void;
+    // @internal (undocumented)
     handleFocus(e: FocusEvent): void;
     // @internal (undocumented)
     handleFocusOut(e: FocusEvent): void;
@@ -643,12 +647,16 @@ export class DataGrid extends FoundationElement {
     // @internal (undocumented)
     handleRowFocus(e: Event): void;
     headerCellItemTemplate?: ViewTemplate;
-    noTabbing: boolean;
-    // @internal
     rowElements: HTMLElement[];
     rowElementTag: string;
     rowItemTemplate: ViewTemplate;
     rowsData: object[];
+    // @internal
+    selectedRanges: DataGridSelectedRange[];
+    // @internal
+    selectedRowIndexes: number[];
+    // (undocumented)
+    selectionMode: DataGridSelectionMode;
     }
 
 // @public
@@ -729,6 +737,17 @@ export enum DataGridRowTypes {
     // (undocumented)
     stickyHeader = "sticky-header"
 }
+
+// @public
+export interface DataGridSelectedRange {
+    endCol: number;
+    endRow: number;
+    startCol: number;
+    startRow: number;
+}
+
+// @public
+export type DataGridSelectionMode = "none" | "singleRow" | "multiRow" | "range";
 
 // @public
 export const dataGridTemplate: FoundationElementTemplate<ViewTemplate<DataGrid>>;

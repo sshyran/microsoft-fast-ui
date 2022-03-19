@@ -6,7 +6,9 @@ import {
     RepeatDirective,
     ViewTemplate,
 } from "@microsoft/fast-element";
+import { keySpace } from "@microsoft/fast-web-utilities";
 import {
+    eventClick,
     eventFocus,
     eventFocusOut,
     eventKeyDown,
@@ -17,12 +19,45 @@ import {
     keyPageDown,
     keyPageUp,
 } from "@microsoft/fast-web-utilities";
-import { FoundationElement } from "../foundation-element/foundation-element.js";
-import type { DataGridCell } from "./data-grid-cell.js";
-import type { DataGridRow } from "./data-grid-row.js";
-import { DataGridRowTypes, GenerateHeaderOptions } from "./data-grid.options.js";
-
+import { FoundationElement } from "../foundation-element";
+import type { DataGridCell } from "./data-grid-cell";
+import type { DataGridRow } from "./data-grid-row";
+import { DataGridRowTypes, GenerateHeaderOptions } from "./data-grid.options";
 export { DataGridRowTypes, GenerateHeaderOptions };
+
+/**
+ * Describes the how the dialog element handles selection
+ *
+ * @public
+ */
+export type DataGridSelectionMode = "none" | "singleRow" | "multiRow" | "range";
+
+/**
+ * Defines a column in the grid
+ *
+ * @public
+ */
+export interface DataGridSelectedRange {
+    /**
+     * Index of column start of selection
+     */
+    startCol: number;
+
+    /**
+     * Index of row start of selection
+     */
+    endCol: number;
+
+    /**
+     * Index of row start of selection
+     */
+    startRow: number;
+
+    /**
+     * Index of row end of selection
+     */
+    endRow: number;
+}
 
 /**
  * Defines a column in the grid
@@ -184,6 +219,30 @@ export class DataGrid extends FoundationElement {
     }
 
     /**
+     *
+     *
+     * @public
+     * @remarks
+     * HTML Attribute: selection-mode
+     */
+    @attr({ attribute: "selection-mode" })
+    public selectionMode: DataGridSelectionMode = "none";
+    // private selectionModeChanged(): void {
+    //     if (this.$fastController.isConnected) {
+    //     }
+    // }
+
+    /**
+     * Determines if clicks can automatically select
+     *
+     * @public
+     * @remarks
+     * HTML Attribute: click-select
+     */
+    @attr({ attribute: "click-select", mode: "boolean" })
+    public clickSelect: boolean = true;
+
+    /**
      * The data being displayed in the grid
      *
      * @public
@@ -301,10 +360,26 @@ export class DataGrid extends FoundationElement {
     /**
      * Children that are rows
      *
-     * @internal
+     * @public
      */
     @observable
     public rowElements: HTMLElement[];
+
+    /**
+     * Selected row indexes
+     *
+     * @internal
+     */
+    @observable
+    public selectedRowIndexes: number[] = [];
+
+    /**
+     * Selected range
+     *
+     * @internal
+     */
+    @observable
+    public selectedRanges: DataGridSelectedRange[] = [];
 
     private rowsRepeatBehavior: RepeatBehavior | null;
     private rowsPlaceholder: Node | null = null;
@@ -353,6 +428,7 @@ export class DataGrid extends FoundationElement {
         this.addEventListener(eventFocus, this.handleFocus);
         this.addEventListener(eventKeyDown, this.handleKeydown);
         this.addEventListener(eventFocusOut, this.handleFocusOut);
+        this.addEventListener(eventClick, this.handleClick);
 
         this.observer = new MutationObserver(this.onChildListChange);
         // only observe if nodes are added or removed
@@ -375,6 +451,7 @@ export class DataGrid extends FoundationElement {
         this.removeEventListener(eventFocus, this.handleFocus);
         this.removeEventListener(eventKeyDown, this.handleKeydown);
         this.removeEventListener(eventFocusOut, this.handleFocusOut);
+        this.removeEventListener(eventClick, this.handleClick);
 
         // disconnect observer
         this.observer.disconnect();
@@ -408,6 +485,28 @@ export class DataGrid extends FoundationElement {
     public handleFocusOut(e: FocusEvent): void {
         if (e.relatedTarget === null || !this.contains(e.relatedTarget as Element)) {
             this.setAttribute("tabIndex", this.noTabbing ? "-1" : "0");
+        }
+    }
+
+    /**
+     * @internal
+     */
+    public handleClick(e: MouseEvent): void {
+        if (e.defaultPrevented || !this.clickSelect) {
+            return;
+        }
+
+        switch (this.selectionMode) {
+            case "none":
+                return;
+
+            case "multiRow":
+            case "singleRow":
+                this.handleRowSelect(e);
+                return;
+
+            case "range":
+                return;
         }
     }
 
@@ -520,6 +619,101 @@ export class DataGrid extends FoundationElement {
                     );
                 }
                 break;
+
+            case keySpace:
+                switch (this.selectionMode) {
+                    case "none":
+                    case "range":
+                        return;
+
+                    case "multiRow":
+                    case "singleRow":
+                        this.handleRowSelect(e);
+                        return;
+                }
+                break;
+
+            case "a":
+                if (!e.ctrlKey) {
+                    return;
+                }
+                switch (this.selectionMode) {
+                    case "none":
+                    case "singleRow":
+                    case "range":
+                        return;
+
+                    case "multiRow":
+                        this.selectAllRows();
+                        e.preventDefault();
+                        return;
+                }
+                break;
+        }
+    }
+
+    private selectAllRows(): void {
+        this.selectedRowIndexes.splice(0);
+        this.rowElements.forEach(element => {
+            this.selectedRowIndexes.push((element as DataGridRow).rowIndex);
+            element.setAttribute("aria-selected", "true");
+        });
+    }
+
+    private handleRowSelect(e: Event): void {
+        const path: EventTarget[] = e.composedPath();
+        const rowMatch: EventTarget | undefined = path.find((target: EventTarget) => {
+            return this.rowElements.indexOf(target as HTMLElement) !== -1;
+        });
+        if (rowMatch) {
+            const newSelectedRow: DataGridRow = rowMatch as DataGridRow;
+            switch (this.selectionMode) {
+                case "singleRow":
+                    e.preventDefault();
+                    if (this.selectedRowIndexes.length === 0) {
+                        newSelectedRow.setAttribute("aria-selected", "true");
+                        this.selectedRowIndexes.push(newSelectedRow.rowIndex);
+                    } else {
+                        if (
+                            this.selectedRowIndexes.indexOf(newSelectedRow.rowIndex) === 0
+                        ) {
+                            // deselect
+                            newSelectedRow.setAttribute("aria-selected", "false");
+                            this.selectedRowIndexes.splice(0, 1);
+                        } else {
+                            const oldSelectedRow:
+                                | HTMLElement
+                                | undefined = this.rowElements.find(
+                                (element: HTMLElement) => {
+                                    return (
+                                        (element as DataGridRow).rowIndex ===
+                                        this.selectedRowIndexes[0]
+                                    );
+                                }
+                            );
+                            if (oldSelectedRow) {
+                                oldSelectedRow.setAttribute("aria-selected", "false");
+                            }
+                            newSelectedRow.setAttribute("aria-selected", "true");
+                            this.selectedRowIndexes.splice(0, 1, newSelectedRow.rowIndex);
+                        }
+                    }
+                    break;
+
+                case "multiRow":
+                    e.preventDefault();
+                    if (!this.selectedRowIndexes.includes(newSelectedRow.rowIndex)) {
+                        newSelectedRow.setAttribute("aria-selected", "true");
+                        this.selectedRowIndexes.push(newSelectedRow.rowIndex);
+                    } else {
+                        newSelectedRow.setAttribute("aria-selected", "false");
+                        this.selectedRowIndexes.splice(
+                            this.selectedRowIndexes.indexOf(newSelectedRow.rowIndex),
+                            1
+                        );
+                    }
+                    break;
+            }
         }
     }
 
@@ -658,6 +852,13 @@ export class DataGrid extends FoundationElement {
             const thisRow = element as DataGridRow;
             thisRow.rowIndex = index;
             thisRow.gridTemplateColumns = newGridTemplateColumns;
+            if (this.selectionMode === "singleRow" || this.selectionMode === "multiRow") {
+                if (this.selectedRowIndexes.includes(index)) {
+                    thisRow.setAttribute("aria-selected", "true");
+                } else {
+                    thisRow.setAttribute("aria-selected", "false");
+                }
+            }
             if (this.columnDefinitionsStale) {
                 thisRow.columnDefinitions = this.columnDefinitions;
             }
