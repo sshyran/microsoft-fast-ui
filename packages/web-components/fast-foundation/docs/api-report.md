@@ -622,7 +622,6 @@ export const darkModeStylesheetBehavior: (styles: ElementStyles) => MatchMediaSt
 export class DataGrid extends FoundationElement {
     constructor();
     cellItemTemplate?: ViewTemplate;
-    // (undocumented)
     clickSelect: boolean;
     columnDefinitions: ColumnDefinition[] | null;
     // @internal (undocumented)
@@ -637,8 +636,6 @@ export class DataGrid extends FoundationElement {
     generateHeader: GenerateHeaderOptions | "none" | "default" | "sticky";
     gridTemplateColumns: string;
     // @internal (undocumented)
-    handleClick(e: MouseEvent): void;
-    // @internal (undocumented)
     handleFocus(e: FocusEvent): void;
     // @internal (undocumented)
     handleFocusOut(e: FocusEvent): void;
@@ -646,6 +643,8 @@ export class DataGrid extends FoundationElement {
     handleKeydown(e: KeyboardEvent): void;
     // @internal (undocumented)
     handleRowFocus(e: Event): void;
+    // (undocumented)
+    handleRowSelectedChange(e: CustomEvent): void;
     headerCellItemTemplate?: ViewTemplate;
     rowElements: HTMLElement[];
     rowElementTag: string;
@@ -675,6 +674,8 @@ export class DataGridCell extends FoundationElement {
     // (undocumented)
     handleKeydown(e: KeyboardEvent): void;
     rowData: object | null;
+    // @internal
+    selected: boolean;
     }
 
 // @public
@@ -697,6 +698,8 @@ export class DataGridRow extends FoundationElement {
     // @internal
     cellElements: HTMLElement[];
     cellItemTemplate?: ViewTemplate;
+    // @internal
+    clickSelect: boolean;
     columnDefinitions: ColumnDefinition[] | null;
     // @internal (undocumented)
     connectedCallback(): void;
@@ -709,20 +712,25 @@ export class DataGridRow extends FoundationElement {
     // @internal (undocumented)
     focusColumnIndex: number;
     gridTemplateColumns: string;
-    // (undocumented)
+    // @internal (undocumented)
     handleCellFocus(e: Event): void;
-    // (undocumented)
+    // @internal (undocumented)
+    handleClick(e: MouseEvent): void;
+    // @internal (undocumented)
     handleFocusout(e: FocusEvent): void;
     // (undocumented)
     handleKeydown(e: KeyboardEvent): void;
     headerCellItemTemplate?: ViewTemplate;
     // @internal
     isActiveRow: boolean;
+    // @internal
+    isSelectable: boolean;
     rowData: object | null;
     rowIndex: number;
     rowType: DataGridRowTypes | "default" | "header" | "sticky-header";
     // @internal (undocumented)
     slottedCellElements: HTMLElement[];
+    toggleSelected(newValue: boolean, e?: MouseEvent | KeyboardEvent): void;
     }
 
 // @public

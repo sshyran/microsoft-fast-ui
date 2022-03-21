@@ -98,6 +98,17 @@ export class DataGridCell extends FoundationElement {
         }
     }
 
+    /**
+     * If the the cell is selected
+     *
+     * @internal
+     */
+    @observable
+    public selected: boolean;
+    private selectedChanged(): void {
+        this.$emit("selectedchanged");
+    }
+
     private isActiveCell: boolean = false;
     private customCellView: HTMLView | null = null;
 

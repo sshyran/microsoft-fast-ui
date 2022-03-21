@@ -8,7 +8,6 @@ import {
 } from "@microsoft/fast-element";
 import { keySpace } from "@microsoft/fast-web-utilities";
 import {
-    eventClick,
     eventFocus,
     eventFocusOut,
     eventKeyDown,
@@ -227,10 +226,11 @@ export class DataGrid extends FoundationElement {
      */
     @attr({ attribute: "selection-mode" })
     public selectionMode: DataGridSelectionMode = "none";
-    // private selectionModeChanged(): void {
-    //     if (this.$fastController.isConnected) {
-    //     }
-    // }
+    private selectionModeChanged(): void {
+        if (this.$fastController.isConnected) {
+            this.deselectAllRows();
+        }
+    }
 
     /**
      * Determines if clicks can automatically select
@@ -255,6 +255,7 @@ export class DataGrid extends FoundationElement {
         }
         if (this.$fastController.isConnected) {
             this.toggleGeneratedHeader();
+            this.deselectAllRows();
         }
     }
 
@@ -386,7 +387,10 @@ export class DataGrid extends FoundationElement {
 
     private generatedHeader: DataGridRow | null = null;
 
+    // flag to indicate whether the grid is actively updating focus
+    // (so we don't self-trigger changes)
     private isUpdatingFocus: boolean = false;
+
     private pendingFocusUpdate: boolean = false;
 
     private observer: MutationObserver;
@@ -395,6 +399,9 @@ export class DataGrid extends FoundationElement {
     private columnDefinitionsStale: boolean = true;
 
     private generatedGridTemplateColumns: string = "";
+
+    private lastSelectedRowIndex = -1;
+    private lastShiftSelectedRowIndex = -1;
 
     constructor() {
         super();
@@ -428,7 +435,10 @@ export class DataGrid extends FoundationElement {
         this.addEventListener(eventFocus, this.handleFocus);
         this.addEventListener(eventKeyDown, this.handleKeydown);
         this.addEventListener(eventFocusOut, this.handleFocusOut);
-        this.addEventListener(eventClick, this.handleClick);
+
+        if (this.selectionMode === "singleRow" || this.selectionMode === "multiRow") {
+            this.addEventListener("rowselectionchanged", this.handleRowSelectedChange);
+        }
 
         this.observer = new MutationObserver(this.onChildListChange);
         // only observe if nodes are added or removed
@@ -451,7 +461,10 @@ export class DataGrid extends FoundationElement {
         this.removeEventListener(eventFocus, this.handleFocus);
         this.removeEventListener(eventKeyDown, this.handleKeydown);
         this.removeEventListener(eventFocusOut, this.handleFocusOut);
-        this.removeEventListener(eventClick, this.handleClick);
+
+        if (this.selectionMode === "singleRow" || this.selectionMode === "multiRow") {
+            this.removeEventListener("rowselectionchanged", this.handleRowSelectedChange);
+        }
 
         // disconnect observer
         this.observer.disconnect();
@@ -485,28 +498,6 @@ export class DataGrid extends FoundationElement {
     public handleFocusOut(e: FocusEvent): void {
         if (e.relatedTarget === null || !this.contains(e.relatedTarget as Element)) {
             this.setAttribute("tabIndex", this.noTabbing ? "-1" : "0");
-        }
-    }
-
-    /**
-     * @internal
-     */
-    public handleClick(e: MouseEvent): void {
-        if (e.defaultPrevented || !this.clickSelect) {
-            return;
-        }
-
-        switch (this.selectionMode) {
-            case "none":
-                return;
-
-            case "multiRow":
-            case "singleRow":
-                this.handleRowSelect(e);
-                return;
-
-            case "range":
-                return;
         }
     }
 
@@ -620,29 +611,11 @@ export class DataGrid extends FoundationElement {
                 }
                 break;
 
-            case keySpace:
-                switch (this.selectionMode) {
-                    case "none":
-                    case "range":
-                        return;
-
-                    case "multiRow":
-                    case "singleRow":
-                        this.handleRowSelect(e);
-                        return;
-                }
-                break;
-
             case "a":
                 if (!e.ctrlKey) {
                     return;
                 }
                 switch (this.selectionMode) {
-                    case "none":
-                    case "singleRow":
-                    case "range":
-                        return;
-
                     case "multiRow":
                         this.selectAllRows();
                         e.preventDefault();
@@ -652,68 +625,146 @@ export class DataGrid extends FoundationElement {
         }
     }
 
-    private selectAllRows(): void {
-        this.selectedRowIndexes.splice(0);
-        this.rowElements.forEach(element => {
-            this.selectedRowIndexes.push((element as DataGridRow).rowIndex);
-            element.setAttribute("aria-selected", "true");
-        });
-    }
+    public handleRowSelectedChange(e: CustomEvent): void {
+        if (e.defaultPrevented || this.selectionMode === "none") {
+            return;
+        }
 
-    private handleRowSelect(e: Event): void {
         const path: EventTarget[] = e.composedPath();
         const rowMatch: EventTarget | undefined = path.find((target: EventTarget) => {
             return this.rowElements.indexOf(target as HTMLElement) !== -1;
         });
+
         if (rowMatch) {
-            const newSelectedRow: DataGridRow = rowMatch as DataGridRow;
+            e.preventDefault();
+            const changedRow: DataGridRow = rowMatch as DataGridRow;
             switch (this.selectionMode) {
                 case "singleRow":
-                    e.preventDefault();
-                    if (this.selectedRowIndexes.length === 0) {
-                        newSelectedRow.setAttribute("aria-selected", "true");
-                        this.selectedRowIndexes.push(newSelectedRow.rowIndex);
-                    } else {
-                        if (
-                            this.selectedRowIndexes.indexOf(newSelectedRow.rowIndex) === 0
-                        ) {
-                            // deselect
-                            newSelectedRow.setAttribute("aria-selected", "false");
-                            this.selectedRowIndexes.splice(0, 1);
-                        } else {
-                            const oldSelectedRow:
-                                | HTMLElement
-                                | undefined = this.rowElements.find(
-                                (element: HTMLElement) => {
-                                    return (
-                                        (element as DataGridRow).rowIndex ===
-                                        this.selectedRowIndexes[0]
-                                    );
-                                }
-                            );
-                            if (oldSelectedRow) {
-                                oldSelectedRow.setAttribute("aria-selected", "false");
-                            }
-                            newSelectedRow.setAttribute("aria-selected", "true");
-                            this.selectedRowIndexes.splice(0, 1, newSelectedRow.rowIndex);
-                        }
-                    }
+                    this.handleSingleRowSelection(changedRow);
+                    this.$emit("selectionchanged");
                     break;
 
                 case "multiRow":
-                    e.preventDefault();
-                    if (!this.selectedRowIndexes.includes(newSelectedRow.rowIndex)) {
-                        newSelectedRow.setAttribute("aria-selected", "true");
-                        this.selectedRowIndexes.push(newSelectedRow.rowIndex);
+                    if (e.detail && (e.detail as MouseEvent | KeyboardEvent).shiftKey) {
+                        if (this.lastSelectedRowIndex === -1) {
+                            this.handleSingleRowSelection(changedRow);
+                            this.lastShiftSelectedRowIndex = changedRow.rowIndex;
+                        } else {
+                            let i: number;
+                            let dirMod: number;
+                            if (this.lastShiftSelectedRowIndex !== -1) {
+                                // undo the last thing
+                                dirMod =
+                                    this.lastShiftSelectedRowIndex >
+                                    this.lastSelectedRowIndex
+                                        ? 1
+                                        : -1;
+                                i = this.lastShiftSelectedRowIndex + dirMod;
+                                for (
+                                    i;
+                                    i !== this.lastShiftSelectedRowIndex;
+                                    i = i + dirMod
+                                ) {
+                                    (this.rowElements[i] as DataGridRow).selected = false;
+                                    this.selectedRowIndexes.splice(i, 1);
+                                }
+                            }
+                            dirMod =
+                                changedRow.rowIndex > this.lastSelectedRowIndex ? 1 : -1;
+                            i = this.lastSelectedRowIndex + dirMod;
+                            for (i; i !== changedRow.rowIndex; i = i + dirMod) {
+                                (this.rowElements[i] as DataGridRow).selected =
+                                    changedRow.selected;
+                                if (
+                                    changedRow.selected &&
+                                    !this.selectedRowIndexes.includes(i)
+                                ) {
+                                    this.selectedRowIndexes.push(i);
+                                }
+                                if (
+                                    !changedRow.selected &&
+                                    this.selectedRowIndexes.includes(i)
+                                ) {
+                                    this.selectedRowIndexes.splice(i, 1);
+                                }
+                            }
+                            if (changedRow.selected) {
+                                if (
+                                    !this.selectedRowIndexes.includes(changedRow.rowIndex)
+                                ) {
+                                    this.selectedRowIndexes.push(changedRow.rowIndex);
+                                }
+                            } else {
+                                const deleteIndex = this.selectedRowIndexes.indexOf(
+                                    changedRow.rowIndex
+                                );
+                                if (deleteIndex !== -1) {
+                                    this.selectedRowIndexes.splice(deleteIndex, 1);
+                                }
+                            }
+                        }
+                    } else if (
+                        e.detail &&
+                        (e.detail as MouseEvent | KeyboardEvent).ctrlKey
+                    ) {
+                        if (
+                            changedRow.selected &&
+                            !this.selectedRowIndexes.includes(changedRow.rowIndex)
+                        ) {
+                            this.selectedRowIndexes.push(changedRow.rowIndex);
+                            this.lastSelectedRowIndex = changedRow.rowIndex;
+                        }
+                        if (
+                            !changedRow.selected &&
+                            this.selectedRowIndexes.includes(changedRow.rowIndex)
+                        ) {
+                            this.selectedRowIndexes.splice(changedRow.rowIndex, 1);
+                            this.lastSelectedRowIndex = -1;
+                        }
+                        this.lastShiftSelectedRowIndex = -1;
                     } else {
-                        newSelectedRow.setAttribute("aria-selected", "false");
-                        this.selectedRowIndexes.splice(
-                            this.selectedRowIndexes.indexOf(newSelectedRow.rowIndex),
-                            1
-                        );
+                        this.handleSingleRowSelection(changedRow);
+                        this.lastShiftSelectedRowIndex = -1;
                     }
+                    this.$emit("selectionchanged");
                     break;
             }
+        }
+    }
+
+    private selectAllRows(): void {
+        if (this.selectionMode !== "multiRow" && this.selectionMode !== "singleRow") {
+            return;
+        }
+        this.selectedRowIndexes.splice(0);
+        this.rowElements.forEach(element => {
+            this.selectedRowIndexes.push((element as DataGridRow).rowIndex);
+            (element as DataGridRow).selected = true;
+        });
+        this.lastSelectedRowIndex = -1;
+    }
+
+    private deselectAllRows(): void {
+        this.rowElements.forEach(element => {
+            (element as DataGridRow).selected = false;
+        });
+        this.selectedRowIndexes.splice(0);
+        this.lastSelectedRowIndex = -1;
+    }
+
+    private handleSingleRowSelection(changedRow: DataGridRow): void {
+        if (changedRow.selected) {
+            if (this.selectedRowIndexes.length > 0) {
+                this.selectedRowIndexes.forEach(i => {
+                    (this.rowElements[i] as DataGridRow).selected = false;
+                });
+                this.selectedRowIndexes.splice(0);
+            }
+            this.selectedRowIndexes.push(changedRow.rowIndex);
+            this.lastSelectedRowIndex = changedRow.rowIndex;
+        } else {
+            this.selectedRowIndexes.splice(0);
+            this.lastSelectedRowIndex = -1;
         }
     }
 
@@ -808,6 +859,7 @@ export class DataGrid extends FoundationElement {
         /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
         observer: MutationObserver
     ): void => {
+        this.deselectAllRows();
         if (mutations && mutations.length) {
             mutations.forEach((mutation: MutationRecord): void => {
                 mutation.addedNodes.forEach((newNode: Node): void => {
@@ -852,11 +904,13 @@ export class DataGrid extends FoundationElement {
             const thisRow = element as DataGridRow;
             thisRow.rowIndex = index;
             thisRow.gridTemplateColumns = newGridTemplateColumns;
+            thisRow.clickSelect = this.clickSelect;
             if (this.selectionMode === "singleRow" || this.selectionMode === "multiRow") {
+                thisRow.isSelectable = true;
                 if (this.selectedRowIndexes.includes(index)) {
-                    thisRow.setAttribute("aria-selected", "true");
+                    thisRow.selected = true;
                 } else {
-                    thisRow.setAttribute("aria-selected", "false");
+                    thisRow.selected = false;
                 }
             }
             if (this.columnDefinitionsStale) {
