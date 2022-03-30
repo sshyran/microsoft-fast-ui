@@ -652,11 +652,10 @@ export class DataGrid extends FoundationElement {
     rowItemTemplate: ViewTemplate;
     rowsData: object[];
     // @internal
-    selectedRanges: DataGridSelectedRange[];
-    // @internal
     selectedRowIndexes: number[];
     // (undocumented)
     selectionMode: DataGridSelectionMode;
+    selectRowHeader: boolean;
     }
 
 // @public
@@ -750,15 +749,7 @@ export enum DataGridRowTypes {
 }
 
 // @public
-export interface DataGridSelectedRange {
-    endCol: number;
-    endRow: number;
-    startCol: number;
-    startRow: number;
-}
-
-// @public
-export type DataGridSelectionMode = "none" | "singleRow" | "multiRow" | "range";
+export type DataGridSelectionMode = "none" | "singleRow" | "multiRow";
 
 // @public
 export const dataGridTemplate: FoundationElementTemplate<ViewTemplate<DataGrid>>;
