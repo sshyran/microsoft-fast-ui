@@ -646,6 +646,7 @@ export class DataGrid extends FoundationElement {
     // (undocumented)
     handleRowSelectedChange(e: CustomEvent): void;
     headerCellItemTemplate?: ViewTemplate;
+    noTabbing: boolean;
     rowElements: HTMLElement[];
     rowElementTag: string;
     rowItemTemplate: ViewTemplate;
@@ -728,6 +729,8 @@ export class DataGridRow extends FoundationElement {
     rowData: object | null;
     rowIndex: number;
     rowType: DataGridRowTypes | "default" | "header" | "sticky-header";
+    // @internal
+    selected: boolean;
     // @internal (undocumented)
     slottedCellElements: HTMLElement[];
     toggleSelected(newValue: boolean, e?: MouseEvent | KeyboardEvent): void;

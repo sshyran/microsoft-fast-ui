@@ -400,7 +400,7 @@ export class DataGrid extends FoundationElement {
 
     private generatedGridTemplateColumns: string = "";
 
-    private lastSelectedRowIndex = -1;
+    private lastNotShiftSelectedRowIndex = -1;
     private lastShiftSelectedRowIndex = -1;
 
     constructor() {
@@ -646,9 +646,8 @@ export class DataGrid extends FoundationElement {
 
                 case "multiRow":
                     if (e.detail && (e.detail as MouseEvent | KeyboardEvent).shiftKey) {
-                        if (this.lastSelectedRowIndex === -1) {
+                        if (this.lastNotShiftSelectedRowIndex === -1) {
                             this.handleSingleRowSelection(changedRow);
-                            this.lastShiftSelectedRowIndex = changedRow.rowIndex;
                         } else {
                             let i: number;
                             let dirMod: number;
@@ -656,13 +655,13 @@ export class DataGrid extends FoundationElement {
                                 // undo the last thing
                                 dirMod =
                                     this.lastShiftSelectedRowIndex >
-                                    this.lastSelectedRowIndex
-                                        ? 1
-                                        : -1;
-                                i = this.lastShiftSelectedRowIndex + dirMod;
+                                    this.lastNotShiftSelectedRowIndex
+                                        ? -1
+                                        : 1;
+                                i = this.lastShiftSelectedRowIndex;
                                 for (
                                     i;
-                                    i !== this.lastShiftSelectedRowIndex;
+                                    i !== this.lastNotShiftSelectedRowIndex;
                                     i = i + dirMod
                                 ) {
                                     (this.rowElements[i] as DataGridRow).selected = false;
@@ -670,8 +669,10 @@ export class DataGrid extends FoundationElement {
                                 }
                             }
                             dirMod =
-                                changedRow.rowIndex > this.lastSelectedRowIndex ? 1 : -1;
-                            i = this.lastSelectedRowIndex + dirMod;
+                                changedRow.rowIndex > this.lastNotShiftSelectedRowIndex
+                                    ? 1
+                                    : -1;
+                            i = this.lastNotShiftSelectedRowIndex + dirMod;
                             for (i; i !== changedRow.rowIndex; i = i + dirMod) {
                                 (this.rowElements[i] as DataGridRow).selected =
                                     changedRow.selected;
@@ -703,6 +704,7 @@ export class DataGrid extends FoundationElement {
                                 }
                             }
                         }
+                        this.lastShiftSelectedRowIndex = changedRow.rowIndex;
                     } else if (
                         e.detail &&
                         (e.detail as MouseEvent | KeyboardEvent).ctrlKey
@@ -712,14 +714,14 @@ export class DataGrid extends FoundationElement {
                             !this.selectedRowIndexes.includes(changedRow.rowIndex)
                         ) {
                             this.selectedRowIndexes.push(changedRow.rowIndex);
-                            this.lastSelectedRowIndex = changedRow.rowIndex;
+                            this.lastNotShiftSelectedRowIndex = changedRow.rowIndex;
                         }
                         if (
                             !changedRow.selected &&
                             this.selectedRowIndexes.includes(changedRow.rowIndex)
                         ) {
                             this.selectedRowIndexes.splice(changedRow.rowIndex, 1);
-                            this.lastSelectedRowIndex = -1;
+                            this.lastNotShiftSelectedRowIndex = -1;
                         }
                         this.lastShiftSelectedRowIndex = -1;
                     } else {
@@ -733,7 +735,12 @@ export class DataGrid extends FoundationElement {
     }
 
     private selectAllRows(): void {
-        if (this.selectionMode !== "multiRow" && this.selectionMode !== "singleRow") {
+        if (this.selectionMode !== "multiRow") {
+            return;
+        }
+        if (this.selectedRowIndexes.length === this.rowElements.length) {
+            // deselect all if all are already selected
+            this.deselectAllRows();
             return;
         }
         this.selectedRowIndexes.splice(0);
@@ -741,7 +748,7 @@ export class DataGrid extends FoundationElement {
             this.selectedRowIndexes.push((element as DataGridRow).rowIndex);
             (element as DataGridRow).selected = true;
         });
-        this.lastSelectedRowIndex = -1;
+        this.lastNotShiftSelectedRowIndex = -1;
     }
 
     private deselectAllRows(): void {
@@ -749,7 +756,7 @@ export class DataGrid extends FoundationElement {
             (element as DataGridRow).selected = false;
         });
         this.selectedRowIndexes.splice(0);
-        this.lastSelectedRowIndex = -1;
+        this.lastNotShiftSelectedRowIndex = -1;
     }
 
     private handleSingleRowSelection(changedRow: DataGridRow): void {
@@ -761,10 +768,10 @@ export class DataGrid extends FoundationElement {
                 this.selectedRowIndexes.splice(0);
             }
             this.selectedRowIndexes.push(changedRow.rowIndex);
-            this.lastSelectedRowIndex = changedRow.rowIndex;
+            this.lastNotShiftSelectedRowIndex = changedRow.rowIndex;
         } else {
             this.selectedRowIndexes.splice(0);
-            this.lastSelectedRowIndex = -1;
+            this.lastNotShiftSelectedRowIndex = -1;
         }
     }
 
