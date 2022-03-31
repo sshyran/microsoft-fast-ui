@@ -162,6 +162,7 @@ export class DataGridRow extends FoundationElement {
      *
      * @internal
      */
+    @observable
     public isSelectable: boolean = false;
 
     /**

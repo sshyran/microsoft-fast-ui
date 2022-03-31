@@ -54,8 +54,6 @@ export const dataGridCellStyles: FoundationElementTemplate<ElementStyles> = (
         :host {
             forced-color-adjust: none;
             border-color: transparent;
-            background: ${SystemColors.Field};
-            color: ${SystemColors.FieldText};
         }
 
         :host(:${focusVisible}) {
