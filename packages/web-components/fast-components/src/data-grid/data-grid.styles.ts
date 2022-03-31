@@ -14,4 +14,8 @@ export const dataGridStyles: FoundationElementTemplate<ElementStyles> = (
         position: relative;
         flex-direction: column;
     }
+
+    :host([selection-mode="multi-row"]) {
+        user-select: none;
+    }
 `;
