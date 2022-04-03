@@ -239,7 +239,7 @@ export class DataGridRow extends FoundationElement {
     }
 
     /**
-     * Sets the selected state of the row
+     * Attempst to set the selected state of the row
      *
      * @public
      */

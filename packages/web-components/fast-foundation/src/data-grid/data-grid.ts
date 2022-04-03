@@ -6,7 +6,6 @@ import {
     RepeatDirective,
     ViewTemplate,
 } from "@microsoft/fast-element";
-import { keySpace } from "@microsoft/fast-web-utilities";
 import {
     eventFocus,
     eventFocusOut,

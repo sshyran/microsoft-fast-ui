@@ -3,7 +3,7 @@ import { DOM } from "@microsoft/fast-element";
 import { fixture } from "../test-utilities/fixture";
 import { ColumnDefinition, dataGridRowTemplate, DataGridCell, dataGridCellTemplate, DataGridRow } from "./index";
 import { newDataRow } from "./data-grid.spec";
-import { keyArrowLeft, keyArrowRight, keyEnd, keyHome } from "@microsoft/fast-web-utilities";
+import { keyArrowLeft, keyArrowRight, keyEnd, keyHome, keySpace } from "@microsoft/fast-web-utilities";
 
 const FASTDataGridCell = DataGridCell.compose({
     baseName: "data-grid-cell",
@@ -39,6 +39,11 @@ const homeEvent = new KeyboardEvent("keydown", {
 
 const endEvent = new KeyboardEvent("keydown", {
     key: keyEnd,
+    bubbles: true,
+} as KeyboardEventInit);
+
+const spaceEvent = new KeyboardEvent("keydown", {
+    key: keySpace,
     bubbles: true,
 } as KeyboardEventInit);
 
@@ -212,4 +217,117 @@ describe("Data grid row", () => {
 
         await disconnect();
     });
+
+    it("should emit a 'rowselectionchanged' event when clicked with an aria-selected attribute specified and clickSelect enabled", async () => {
+        const { element, connect, disconnect } = await setup();
+
+        element.columnDefinitions = [
+            { columnDataKey: "item1" },
+            { columnDataKey: "item2" },
+            { columnDataKey: "item3" },
+        ] as ColumnDefinition[];
+        (element as DataGridRow).rowData = newDataRow("test");
+        (element as DataGridRow).clickSelect = true;
+
+        let wasInvoked: boolean = false;
+
+        element.addEventListener("rowselectionchanged", e => {
+            wasInvoked = true;
+        });
+
+        await connect();
+
+        element.click();
+        expect(wasInvoked).to.equal(false);
+
+        element.setAttribute("aria-selected", "false");
+
+        element.click();
+        expect(wasInvoked).to.equal(true);
+
+        wasInvoked = false;
+
+        element.setAttribute("aria-selected", "true");
+
+        element.click();
+        expect(wasInvoked).to.equal(true);
+
+        await disconnect();
+    });
+
+    it("should emit a 'rowselectionchanged' event when clicked with clickSelect disabled", async () => {
+        const { element, connect, disconnect } = await setup();
+
+        element.columnDefinitions = [
+            { columnDataKey: "item1" },
+            { columnDataKey: "item2" },
+            { columnDataKey: "item3" },
+        ] as ColumnDefinition[];
+        (element as DataGridRow).rowData = newDataRow("test");
+
+        let wasInvoked: boolean = false;
+
+        element.addEventListener("rowselectionchanged", e => {
+            wasInvoked = true;
+        });
+
+        await connect();
+
+        // clickSelect is false by default
+        expect(element.clickSelect).to.equal(false);
+
+        element.click();
+        expect(wasInvoked).to.equal(false);
+
+        element.setAttribute("aria-selected", "false");
+
+        element.click();
+        expect(wasInvoked).to.equal(false);
+
+        wasInvoked = false;
+
+        element.setAttribute("aria-selected", "true");
+
+        element.click();
+        expect(wasInvoked).to.equal(false);
+
+        await disconnect();
+    });
+
+    it("should emit a 'rowselectionchanged' event when 'space' key pressed with an aria-selected attribute specified", async () => {
+        const { element, connect, disconnect } = await setup();
+
+        element.columnDefinitions = [
+            { columnDataKey: "item1" },
+            { columnDataKey: "item2" },
+            { columnDataKey: "item3" },
+        ] as ColumnDefinition[];
+        (element as DataGridRow).rowData = newDataRow("test");
+
+        let wasInvoked: boolean = false;
+
+        element.addEventListener("rowselectionchanged", e => {
+            wasInvoked = true;
+        });
+
+        await connect();
+
+        element.dispatchEvent(spaceEvent);
+        expect(wasInvoked).to.equal(false);
+
+        element.setAttribute("aria-selected", "false");
+
+        element.dispatchEvent(spaceEvent);
+        expect(wasInvoked).to.equal(true);
+
+        wasInvoked = false;
+
+        element.setAttribute("aria-selected", "true");
+
+        element.dispatchEvent(spaceEvent);
+        expect(wasInvoked).to.equal(true);
+
+        await disconnect();
+    });
+
 });
