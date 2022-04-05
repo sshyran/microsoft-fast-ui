@@ -44,6 +44,7 @@ export const dataGridRowTemplate: FoundationElementTemplate<ViewTemplate<DataGri
         <template
             role="row"
             class="${x => (x.rowType !== "default" ? x.rowType : "")}"
+            aria-selected="${x => (x.selected !== undefined ? x.selected : void 0)}"
             :defaultCellItemTemplate="${cellItemTemplate}"
             :defaultHeaderCellItemTemplate="${headerCellItemTemplate}"
             ${children({

@@ -166,6 +166,14 @@ export class DataGridRow extends FoundationElement {
     public cellElements: HTMLElement[];
 
     /**
+     * If the row is selected
+     *
+     * @internal
+     */
+    @observable
+    public selected: boolean;
+
+    /**
      * Whether click select is enabled
      *
      * @internal
@@ -239,7 +247,7 @@ export class DataGridRow extends FoundationElement {
     }
 
     /**
-     * Attempst to set the selected state of the row
+     * Attempts to set the selected state of the row
      *
      * @public
      */
@@ -307,7 +315,7 @@ export class DataGridRow extends FoundationElement {
                 break;
 
             case keySpace:
-                if (this.hasAttribute("aria-selected")) {
+                if (this.selected !== undefined) {
                     e.preventDefault();
                     this.toggleSelected({
                         newValue: !this.isSelected(),
@@ -320,18 +328,14 @@ export class DataGridRow extends FoundationElement {
     }
 
     private isSelected(): boolean {
-        return !(this.getAttribute("aria-selected") === "false");
+        return this.selected;
     }
 
     /**
      * @internal
      */
     public handleClick(e: MouseEvent): void {
-        if (
-            e.defaultPrevented ||
-            !this.clickSelect ||
-            !this.hasAttribute("aria-selected")
-        ) {
+        if (e.defaultPrevented || !this.clickSelect || this.selected === undefined) {
             return;
         }
         e.preventDefault();

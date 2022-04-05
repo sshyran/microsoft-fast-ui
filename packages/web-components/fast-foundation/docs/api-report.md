@@ -726,6 +726,8 @@ export class DataGridRow extends FoundationElement {
     rowData: object | null;
     rowIndex: number;
     rowType: DataGridRowTypes | "default" | "header" | "sticky-header";
+    // @internal
+    selected: boolean;
     // @internal (undocumented)
     slottedCellElements: HTMLElement[];
     // Warning: (ae-incompatible-release-tags) The symbol "toggleSelected" is marked as @public, but its signature references "DataGridRowSelectionChangedDetail" which is marked as @internal
