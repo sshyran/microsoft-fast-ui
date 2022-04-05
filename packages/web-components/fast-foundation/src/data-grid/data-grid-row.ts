@@ -166,7 +166,7 @@ export class DataGridRow extends FoundationElement {
     public cellElements: HTMLElement[];
 
     /**
-     * If the row is selected
+     * If the row is selected.
      *
      * @internal
      */
