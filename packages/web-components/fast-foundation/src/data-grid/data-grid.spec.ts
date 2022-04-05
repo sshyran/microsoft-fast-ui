@@ -351,4 +351,57 @@ describe("Data grid", () => {
 
         await disconnect();
     });
+
+    it("should not apply initial selection in default 'none' selection mode", async () => {
+        const { document, element, connect, disconnect } = await setup();
+
+        element.rowsData = newDataSet(5);
+        element.setAttribute("initial-selection", "1")
+
+        await connect();
+        await DOM.nextUpdate();
+
+        const selectedRows: Element[] = Array.from(element.querySelectorAll('[aria-selected="true"]'));
+
+        expect(selectedRows.length).to.equal(0);
+        expect((element as DataGrid).selectedRowIndexes.length).to.equal(0);
+
+        await disconnect();
+    });
+    it("should apply initial selection in 'single-row' selection mode", async () => {
+        const { document, element, connect, disconnect } = await setup();
+
+        element.rowsData = newDataSet(5);
+        element.setAttribute("initial-selection", "1")
+        element.setAttribute("selection-mode", "single-row")
+
+        await connect();
+        await DOM.nextUpdate();
+
+        const selectedRows: Element[] = Array.from(element.querySelectorAll('[aria-selected="true"]'));
+
+        expect(selectedRows.length).to.equal(1);
+        expect((element as DataGrid).selectedRowIndexes[0]).to.equal(1);
+
+        await disconnect();
+    });
+
+    it("should apply initial selection in 'multi-row' selection mode", async () => {
+        const { document, element, connect, disconnect } = await setup();
+
+        element.rowsData = newDataSet(5);
+        element.setAttribute("initial-selection", "1, 2")
+        element.setAttribute("selection-mode", "multi-row")
+
+        await connect();
+        await DOM.nextUpdate();
+
+        const selectedRows: Element[] = Array.from(element.querySelectorAll('[aria-selected="true"]'));
+
+        expect(selectedRows.length).to.equal(2);
+        expect((element as DataGrid).selectedRowIndexes[0]).to.equal(1);
+        expect((element as DataGrid).selectedRowIndexes[1]).to.equal(2);
+
+        await disconnect();
+    });
 });
