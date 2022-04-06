@@ -383,7 +383,6 @@ export class DataGrid extends FoundationElement {
         } else {
             this._selectedRowIndexes.splice(0, this.selectedRowIndexes.length, ...next);
         }
-        this._selectedRowIndexes.splice(0, this.selectedRowIndexes.length, ...next);
         this.selectionUpdated = true;
         this.queueRowIndexUpdate();
     }

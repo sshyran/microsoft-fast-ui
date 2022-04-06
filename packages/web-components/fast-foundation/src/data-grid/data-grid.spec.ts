@@ -368,6 +368,7 @@ describe("Data grid", () => {
 
         await disconnect();
     });
+
     it("should apply initial selection in 'single-row' selection mode", async () => {
         const { document, element, connect, disconnect } = await setup();
 
@@ -404,4 +405,77 @@ describe("Data grid", () => {
 
         await disconnect();
     });
+
+    it("should apply user set selection in 'single-row' selection mode" , async () => {
+        const { document, element, connect, disconnect } = await setup();
+
+        element.rowsData = newDataSet(5);
+        element.setAttribute("selection-mode", "single-row")
+
+        await connect();
+        await DOM.nextUpdate();
+
+        let selectedRows: Element[] = Array.from(element.querySelectorAll('[aria-selected="true"]'));
+        expect(selectedRows.length).to.equal(0);
+
+        (element as DataGrid).selectedRowIndexes = [1];
+        await DOM.nextUpdate();
+        selectedRows = Array.from(element.querySelectorAll('[aria-selected="true"]'));
+        expect(selectedRows.length).to.equal(1);
+        expect((selectedRows[0] as DataGridRow).rowIndex).to.equal(1);
+
+        (element as DataGrid).selectedRowIndexes = [4];
+        await DOM.nextUpdate();
+        selectedRows = Array.from(element.querySelectorAll('[aria-selected="true"]'));
+        expect(selectedRows.length).to.equal(1);
+        expect((selectedRows[0] as DataGridRow).rowIndex).to.equal(4);
+
+        (element as DataGrid).selectedRowIndexes = [];
+        await DOM.nextUpdate();
+        selectedRows = Array.from(element.querySelectorAll('[aria-selected="true"]'));
+        expect(selectedRows.length).to.equal(0);
+
+        await disconnect();
+    })
+
+    it("should not allow selection of header row by default" , async () => {
+        const { document, element, connect, disconnect } = await setup();
+
+        element.rowsData = newDataSet(5);
+        element.setAttribute("selection-mode", "single-row")
+
+        await connect();
+        await DOM.nextUpdate();
+
+        let selectedRows: Element[] = Array.from(element.querySelectorAll('[aria-selected="true"]'));
+        expect(selectedRows.length).to.equal(0);
+
+        (element as DataGrid).selectedRowIndexes = [0];
+        await DOM.nextUpdate();
+        selectedRows = Array.from(element.querySelectorAll('[aria-selected="true"]'));
+        expect(selectedRows.length).to.equal(0);
+
+        await disconnect();
+    })
+
+    it("should allow selection of header row when 'select-row-header' is true" , async () => {
+        const { document, element, connect, disconnect } = await setup();
+
+        element.rowsData = newDataSet(5);
+        element.setAttribute("selection-mode", "single-row");
+        element.setAttribute("select-row-header", "true");
+
+        await connect();
+        await DOM.nextUpdate();
+
+        let selectedRows: Element[] = Array.from(element.querySelectorAll('[aria-selected="true"]'));
+        expect(selectedRows.length).to.equal(0);
+
+        (element as DataGrid).selectedRowIndexes = [0];
+        await DOM.nextUpdate();
+        selectedRows = Array.from(element.querySelectorAll('[aria-selected="true"]'));
+        expect(selectedRows.length).to.equal(1);
+
+        await disconnect();
+    })
 });

@@ -218,7 +218,7 @@ describe("Data grid row", () => {
         await disconnect();
     });
 
-    it("should emit a 'rowselectionchanged' event when clicked with an aria-selected attribute specified and clickSelect enabled", async () => {
+    it("should emit a 'rowselectionchanged' event when clicked with a selected value specified and clickSelect enabled", async () => {
         const { element, connect, disconnect } = await setup();
 
         element.columnDefinitions = [
@@ -240,14 +240,14 @@ describe("Data grid row", () => {
         element.click();
         expect(wasInvoked).to.equal(false);
 
-        element.setAttribute("aria-selected", "false");
+        (element as DataGridRow).selected = false;
 
         element.click();
         expect(wasInvoked).to.equal(true);
 
         wasInvoked = false;
 
-        element.setAttribute("aria-selected", "true");
+        (element as DataGridRow).selected = true;
 
         element.click();
         expect(wasInvoked).to.equal(true);
@@ -274,19 +274,19 @@ describe("Data grid row", () => {
         await connect();
 
         // clickSelect is false by default
-        expect(element.clickSelect).to.equal(false);
+        expect((element as DataGridRow).clickSelect).to.equal(false);
 
         element.click();
         expect(wasInvoked).to.equal(false);
 
-        element.setAttribute("aria-selected", "false");
+        (element as DataGridRow).selected = false;
 
         element.click();
         expect(wasInvoked).to.equal(false);
 
         wasInvoked = false;
 
-        element.setAttribute("aria-selected", "true");
+        (element as DataGridRow).selected = true;
 
         element.click();
         expect(wasInvoked).to.equal(false);
@@ -294,7 +294,7 @@ describe("Data grid row", () => {
         await disconnect();
     });
 
-    it("should emit a 'rowselectionchanged' event when 'space' key pressed with an aria-selected attribute specified", async () => {
+    it("should emit a 'rowselectionchanged' event when 'space' key pressed with a selected property is specified", async () => {
         const { element, connect, disconnect } = await setup();
 
         element.columnDefinitions = [
@@ -315,14 +315,14 @@ describe("Data grid row", () => {
         element.dispatchEvent(spaceEvent);
         expect(wasInvoked).to.equal(false);
 
-        element.setAttribute("aria-selected", "false");
+        (element as DataGridRow).selected = false;
 
         element.dispatchEvent(spaceEvent);
         expect(wasInvoked).to.equal(true);
 
         wasInvoked = false;
 
-        element.setAttribute("aria-selected", "true");
+        (element as DataGridRow).selected = true;
 
         element.dispatchEvent(spaceEvent);
         expect(wasInvoked).to.equal(true);
