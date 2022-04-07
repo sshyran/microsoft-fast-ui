@@ -58,13 +58,13 @@ const arrowDownEvent = new KeyboardEvent("keydown", {
     bubbles: true,
 } as KeyboardEventInit);
 
-const homeEvent = new KeyboardEvent("keydown", {
+const ctrlHomeEvent = new KeyboardEvent("keydown", {
     key: keyHome,
     bubbles: true,
     ctrlKey: true,
 } as KeyboardEventInit);
 
-const endEvent = new KeyboardEvent("keydown", {
+const ctrlEndEvent = new KeyboardEvent("keydown", {
     key: keyEnd,
     bubbles: true,
     ctrlKey: true,
@@ -73,6 +73,24 @@ const endEvent = new KeyboardEvent("keydown", {
 const spaceEvent = new KeyboardEvent("keydown", {
     key: keySpace,
     bubbles: true,
+} as KeyboardEventInit);
+
+const ctrlSpaceEvent = new KeyboardEvent("keydown", {
+    key: keySpace,
+    bubbles: true,
+    ctrlKey: true,
+} as KeyboardEventInit);
+
+const ctrlShiftEvent = new KeyboardEvent("keydown", {
+    key: keySpace,
+    bubbles: true,
+    shiftKey: true,
+} as KeyboardEventInit);
+
+const ctrlAEvent = new KeyboardEvent("keydown", {
+    key: "a",
+    bubbles: true,
+    ctrlKey: true,
 } as KeyboardEventInit);
 
 const cellQueryString = '[role="cell"], [role="gridcell"], [role="columnheader"]';
@@ -269,10 +287,10 @@ describe("Data grid", () => {
         (cells[0] as HTMLElement).focus();
         expect(document.activeElement?.textContent).to.contain("item1");
 
-        document.activeElement?.dispatchEvent(endEvent);
+        document.activeElement?.dispatchEvent(ctrlEndEvent);
         expect(document.activeElement?.textContent).to.contain("value 6-2");
 
-        document.activeElement?.dispatchEvent(homeEvent);
+        document.activeElement?.dispatchEvent(ctrlHomeEvent);
         expect(document.activeElement?.textContent).to.contain("item1");
 
         await disconnect();
@@ -565,4 +583,79 @@ describe("Data grid", () => {
 
         await disconnect();
     });
+
+    it("should select/deselect all in row multi-select with a ctrl + a", async () => {
+        const { document, element, connect, disconnect } = await setup();
+
+        element.rowsData = newDataSet(5);
+        element.setAttribute("selection-mode", "multi-row");
+
+        await connect();
+        await DOM.nextUpdate();
+
+        const rows: Element[] = Array.from(element.querySelectorAll('[role="row"]'));
+        let cells: Element[] = Array.from(rows[1].querySelectorAll(cellQueryString));
+
+        (cells[0] as HTMLElement).focus();
+        document.activeElement?.dispatchEvent(ctrlAEvent);
+
+        await DOM.nextUpdate();
+
+        let selectedRows: Element[] = Array.from(element.querySelectorAll('[aria-selected="true"]'));
+        expect(selectedRows.length).to.equal(5);
+
+
+        (cells[0] as HTMLElement).focus();
+        document.activeElement?.dispatchEvent(ctrlAEvent);
+
+        await DOM.nextUpdate();
+
+        selectedRows = Array.from(element.querySelectorAll('[aria-selected="true"]'));
+        expect(selectedRows.length).to.equal(0);
+
+        await disconnect();
+    });
+
+    it("should select multiple rows with ctrl key in multi-select mode", async () => {
+        const { document, element, connect, disconnect } = await setup();
+
+        element.rowsData = newDataSet(5);
+        element.setAttribute("selection-mode", "multi-row");
+
+        await connect();
+        await DOM.nextUpdate();
+
+        const rows: Element[] = Array.from(element.querySelectorAll('[role="row"]'));
+        let cells: Element[] = Array.from(rows[1].querySelectorAll(cellQueryString));
+
+        (cells[0] as HTMLElement).focus();
+        document.activeElement?.dispatchEvent(spaceEvent);
+
+        await DOM.nextUpdate();
+
+        let selectedRows: Element[] = Array.from(element.querySelectorAll('[aria-selected="true"]'));
+        expect(selectedRows.length).to.equal(1);
+        expect((element as DataGrid).selectedRowIndexes[0]).to.equal(1);
+
+        cells = Array.from(rows[2].querySelectorAll(cellQueryString));
+        (cells[0] as HTMLElement).focus();
+        document.activeElement?.dispatchEvent(ctrlSpaceEvent);
+
+        await DOM.nextUpdate();
+
+        selectedRows = Array.from(element.querySelectorAll('[aria-selected="true"]'));
+        expect(selectedRows.length).to.equal(2);
+        expect((element as DataGrid).selectedRowIndexes[1]).to.equal(2);
+
+        document.activeElement?.dispatchEvent(ctrlSpaceEvent);
+
+        await DOM.nextUpdate();
+
+        selectedRows = Array.from(element.querySelectorAll('[aria-selected="true"]'));
+        expect(selectedRows.length).to.equal(1);
+        expect((element as DataGrid).selectedRowIndexes[0]).to.equal(1);
+
+        await disconnect();
+    });
+
 });
