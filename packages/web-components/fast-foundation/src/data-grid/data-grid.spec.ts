@@ -11,7 +11,7 @@ import {
 import type { ColumnDefinition } from "./data-grid";
 import { DataGridRowTypes, GenerateHeaderOptions } from "./data-grid.options";
 import { DOM } from "@microsoft/fast-element";
-import { keyArrowDown, keyArrowUp, keyEnd, keyHome } from "@microsoft/fast-web-utilities";
+import { keyArrowDown, keyArrowUp, keyEnd, keyHome, keySpace } from "@microsoft/fast-web-utilities";
 
 const FASTDataGridCell = DataGridCell.compose({
     baseName: "data-grid-cell",
@@ -68,6 +68,11 @@ const endEvent = new KeyboardEvent("keydown", {
     key: keyEnd,
     bubbles: true,
     ctrlKey: true,
+} as KeyboardEventInit);
+
+const spaceEvent = new KeyboardEvent("keydown", {
+    key: keySpace,
+    bubbles: true,
 } as KeyboardEventInit);
 
 const cellQueryString = '[role="cell"], [role="gridcell"], [role="columnheader"]';
@@ -478,4 +483,86 @@ describe("Data grid", () => {
 
         await disconnect();
     })
+
+    it("should select and deselect rows with space bar key", async () => {
+        const { document, element, connect, disconnect } = await setup();
+
+        element.rowsData = newDataSet(5);
+        element.setAttribute("selection-mode", "single-row");
+        element.setAttribute("select-row-header", "true");
+
+        await connect();
+        await DOM.nextUpdate();
+
+        const rows: Element[] = Array.from(element.querySelectorAll('[role="row"]'));
+        let cells: Element[] = Array.from(rows[1].querySelectorAll(cellQueryString));
+
+        (cells[0] as HTMLElement).focus();
+        document.activeElement?.dispatchEvent(spaceEvent);
+
+        await DOM.nextUpdate();
+
+        let selectedRows: Element[] = Array.from(element.querySelectorAll('[aria-selected="true"]'));
+        expect(selectedRows.length).to.equal(1);
+        expect((element as DataGrid).selectedRowIndexes[0]).to.equal(1);
+
+        cells = Array.from(rows[2].querySelectorAll(cellQueryString));
+        (cells[0] as HTMLElement).focus();
+        document.activeElement?.dispatchEvent(spaceEvent);
+
+        await DOM.nextUpdate();
+
+        selectedRows = Array.from(element.querySelectorAll('[aria-selected="true"]'));
+        expect(selectedRows.length).to.equal(1);
+        expect((element as DataGrid).selectedRowIndexes[0]).to.equal(2);
+
+        document.activeElement?.dispatchEvent(spaceEvent);
+
+        await DOM.nextUpdate();
+
+        selectedRows = Array.from(element.querySelectorAll('[aria-selected="true"]'));
+        expect(selectedRows.length).to.equal(0);
+
+        await disconnect();
+    });
+
+    it("should select and deselect rows with click", async () => {
+        const { document, element, connect, disconnect } = await setup();
+
+        element.rowsData = newDataSet(5);
+        element.setAttribute("selection-mode", "single-row");
+        element.setAttribute("select-row-header", "true");
+
+        await connect();
+        await DOM.nextUpdate();
+
+        const rows: Element[] = Array.from(element.querySelectorAll('[role="row"]'));
+        let cells: Element[] = Array.from(rows[1].querySelectorAll(cellQueryString));
+
+        (cells[0] as HTMLElement).click();
+
+        await DOM.nextUpdate();
+
+        let selectedRows: Element[] = Array.from(element.querySelectorAll('[aria-selected="true"]'));
+        expect(selectedRows.length).to.equal(1);
+        expect((element as DataGrid).selectedRowIndexes[0]).to.equal(1);
+
+        cells = Array.from(rows[2].querySelectorAll(cellQueryString));
+        (cells[0] as HTMLElement).click();
+
+        await DOM.nextUpdate();
+
+        selectedRows = Array.from(element.querySelectorAll('[aria-selected="true"]'));
+        expect(selectedRows.length).to.equal(1);
+        expect((element as DataGrid).selectedRowIndexes[0]).to.equal(2);
+
+        (cells[0] as HTMLElement).click();
+
+        await DOM.nextUpdate();
+
+        selectedRows = Array.from(element.querySelectorAll('[aria-selected="true"]'));
+        expect(selectedRows.length).to.equal(0);
+
+        await disconnect();
+    });
 });
