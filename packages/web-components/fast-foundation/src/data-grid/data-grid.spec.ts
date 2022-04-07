@@ -658,4 +658,48 @@ describe("Data grid", () => {
         await disconnect();
     });
 
+    it("should select/deselect multiple rows with shift key in multi-select mode", async () => {
+        const { document, element, connect, disconnect } = await setup();
+
+        element.rowsData = newDataSet(5);
+        element.setAttribute("selection-mode", "multi-row");
+
+        await connect();
+        await DOM.nextUpdate();
+
+        const rows: Element[] = Array.from(element.querySelectorAll('[role="row"]'));
+        let cells: Element[] = Array.from(rows[3].querySelectorAll(cellQueryString));
+
+        (cells[0] as HTMLElement).focus();
+        document.activeElement?.dispatchEvent(spaceEvent);
+
+        await DOM.nextUpdate();
+
+        let selectedRows: Element[] = Array.from(element.querySelectorAll('[aria-selected="true"]'));
+        expect(selectedRows.length).to.equal(1);
+        expect((element as DataGrid).selectedRowIndexes[0]).to.equal(3);
+
+        cells = Array.from(rows[1].querySelectorAll(cellQueryString));
+        (cells[0] as HTMLElement).focus();
+        document.activeElement?.dispatchEvent(ctrlShiftEvent);
+
+        await DOM.nextUpdate();
+
+        selectedRows = Array.from(element.querySelectorAll('[aria-selected="true"]'));
+        expect(selectedRows.length).to.equal(3);
+        expect((element as DataGrid).selectedRowIndexes[1]).to.equal(2);
+
+        cells = Array.from(rows[5].querySelectorAll(cellQueryString));
+        (cells[0] as HTMLElement).focus();
+        document.activeElement?.dispatchEvent(ctrlShiftEvent);
+
+        await DOM.nextUpdate();
+
+        selectedRows = Array.from(element.querySelectorAll('[aria-selected="true"]'));
+        expect(selectedRows.length).to.equal(3);
+        expect((element as DataGrid).selectedRowIndexes[2]).to.equal(5);
+
+        await disconnect();
+    });
+
 });
