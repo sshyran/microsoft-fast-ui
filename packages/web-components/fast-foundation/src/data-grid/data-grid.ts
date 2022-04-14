@@ -230,10 +230,10 @@ export class DataGrid extends FoundationElement {
      *
      * @public
      * @remarks
-     * HTML Attribute: initial-selection
+     * HTML Attribute: initial-row-selection
      */
-    @attr({ attribute: "initial-selection" })
-    public initialSelection: string;
+    @attr({ attribute: "initial-row-selection" })
+    public initialRowSelection: string;
 
     /**
      * The data being displayed in the grid
@@ -455,8 +455,8 @@ export class DataGrid extends FoundationElement {
             this.setAttribute("tabindex", "-1");
         }
 
-        if (this.selectionMode !== "none" && this.initialSelection) {
-            const selectionAsArray: string[] = this.initialSelection.split(",");
+        if (this.selectionMode !== "none" && this.initialRowSelection) {
+            const selectionAsArray: string[] = this.initialRowSelection.split(",");
             const initialSelection: number[] = [];
             selectionAsArray.forEach((element: string): void => {
                 initialSelection.push(parseInt(element.trim()));

@@ -59,10 +59,10 @@ export default {
                     required: false,
                 },
                 {
-                    name: "initial-selection",
-                    title: "Initial selection",
+                    name: "initial-row-selection",
+                    title: "Initial row selection",
                     description:
-                        "The initially selected grid elements. In the case of row selection the format should be a comma delimited list of row indexes. ie. '1,3,5'",
+                        "The initially selected rows, the format should be a comma delimited list of row indexes. ie. '1,3,5'",
                     type: "boolean",
                     required: false,
                 },

@@ -379,7 +379,7 @@ describe("Data grid", () => {
         const { document, element, connect, disconnect } = await setup();
 
         element.rowsData = newDataSet(5);
-        element.setAttribute("initial-selection", "1")
+        element.setAttribute("initial-row-selection", "1")
 
         await connect();
         await DOM.nextUpdate();
@@ -396,7 +396,7 @@ describe("Data grid", () => {
         const { document, element, connect, disconnect } = await setup();
 
         element.rowsData = newDataSet(5);
-        element.setAttribute("initial-selection", "1")
+        element.setAttribute("initial-row-selection", "1")
         element.setAttribute("selection-mode", "single-row")
 
         await connect();
@@ -414,7 +414,7 @@ describe("Data grid", () => {
         const { document, element, connect, disconnect } = await setup();
 
         element.rowsData = newDataSet(5);
-        element.setAttribute("initial-selection", "1, 2")
+        element.setAttribute("initial-row-selection", "1, 2")
         element.setAttribute("selection-mode", "multi-row")
 
         await connect();

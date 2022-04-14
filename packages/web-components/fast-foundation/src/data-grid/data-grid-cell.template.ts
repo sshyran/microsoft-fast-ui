@@ -16,7 +16,6 @@ export const dataGridCellTemplate: FoundationElementTemplate<ViewTemplate<
             tabindex="-1"
             role="${x =>
                 !x.cellType || x.cellType === "default" ? "gridcell" : x.cellType}"
-            aria-selected="${x => x.selected}"
             class="
             ${x =>
                 x.cellType === "columnheader"
