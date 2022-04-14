@@ -182,9 +182,9 @@ export const myDataGrid = DataGrid.compose({
 
 #### Superclass
 
-| Name                | Module                  | Package |
-| ------------------- | ----------------------- | ------- |
-| `FoundationElement` | /src/foundation-element |         |
+| Name                | Module                                        | Package |
+| ------------------- | --------------------------------------------- | ------- |
+| `FoundationElement` | /src/foundation-element/foundation-element.js |         |
 
 #### Static Fields
 

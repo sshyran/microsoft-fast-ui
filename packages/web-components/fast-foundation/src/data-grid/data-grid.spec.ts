@@ -702,4 +702,37 @@ describe("Data grid", () => {
         await disconnect();
     });
 
+    it("should emit an event when row selection changes", async () => {
+        const { document, element, connect, disconnect } = await setup();
+
+        element.rowsData = newDataSet(5);
+        element.setAttribute("selection-mode", "multi-row");
+
+        await connect();
+        await DOM.nextUpdate();
+
+        const rows: Element[] = Array.from(element.querySelectorAll('[role="row"]'));
+        let cells: Element[] = Array.from(rows[3].querySelectorAll(cellQueryString));
+
+        let wasInvoked: boolean = false;
+        element.addEventListener("selectionchanged", e => {
+            wasInvoked = true;
+        });
+
+        (cells[0] as HTMLElement).focus();
+        document.activeElement?.dispatchEvent(spaceEvent);
+        await DOM.nextUpdate();
+        expect(wasInvoked).to.equal(true);
+
+        wasInvoked = false;
+        (cells[0] as HTMLElement).click();
+        await DOM.nextUpdate();
+        expect(wasInvoked).to.equal(true);
+
+        element.removeEventListener("selectionchanged", e => {
+            wasInvoked = true;
+        });
+        await disconnect();
+    });
+
 });
