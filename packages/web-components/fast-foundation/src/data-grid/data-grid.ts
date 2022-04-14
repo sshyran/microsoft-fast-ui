@@ -369,7 +369,7 @@ export class DataGrid extends FoundationElement {
     /**
      * Children that are rows
      *
-     * @public
+     * @internal
      */
     @observable
     public rowElements: HTMLElement[];
