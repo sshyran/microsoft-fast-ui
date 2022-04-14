@@ -30,6 +30,42 @@ export default {
                     type: "boolean",
                     required: false,
                 },
+                {
+                    name: "selection-mode",
+                    title: "Selection mode",
+                    description: "Defines how the grid handles row or cell selection.",
+                    type: "string",
+                    values: [
+                        { name: "none" },
+                        { name: "single-row" },
+                        { name: "multi-row" },
+                    ],
+                    required: false,
+                },
+                {
+                    name: "click-select",
+                    title: "Click select",
+                    description:
+                        "Determines if clicks can automatically select when selection is enabled.",
+                    type: "boolean",
+                    required: false,
+                },
+                {
+                    name: "select-row-header",
+                    title: "Select row header",
+                    description:
+                        "Determines if the header row is selectable when selection is enabled.",
+                    type: "boolean",
+                    required: false,
+                },
+                {
+                    name: "initial-selection",
+                    title: "Initial selection",
+                    description:
+                        "The initially selected grid elements. In the case of row selection the format should be a comma delimited list of row indexes. ie. '1,3,5'",
+                    type: "boolean",
+                    required: false,
+                },
             ],
             slots: [
                 {
