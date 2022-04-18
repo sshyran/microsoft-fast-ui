@@ -421,7 +421,7 @@ export class DataGrid extends FoundationElement {
     private generatedGridTemplateColumns: string = "";
 
     private lastNotShiftSelectedRowIndex = -1;
-    private lastShiftSelectedRowIndex = -1;
+    private preShiftRowSelection: number[] | null = null;
 
     private selectionUpdated: boolean = false;
 
@@ -671,7 +671,7 @@ export class DataGrid extends FoundationElement {
             e.preventDefault();
             const changedRow: DataGridRow = rowMatch as DataGridRow;
             const changeEventDetail: DataGridRowSelectionChangedDetail = e.detail;
-            const newSelection: number[] = this.selectedRowIndexes;
+            let newSelection: number[] = this.selectedRowIndexes.slice();
             switch (this.selectionMode) {
                 case "single-row":
                     this.handleSingleRowSelection(changedRow, changeEventDetail);
@@ -682,29 +682,18 @@ export class DataGrid extends FoundationElement {
                         if (this.lastNotShiftSelectedRowIndex === -1) {
                             this.handleSingleRowSelection(changedRow, changeEventDetail);
                         } else {
-                            let i: number;
-                            let dirMod: number;
-                            if (this.lastShiftSelectedRowIndex !== -1) {
+                            if (this.preShiftRowSelection !== null) {
                                 // undo the last thing
-                                dirMod =
-                                    this.lastShiftSelectedRowIndex >
-                                    this.lastNotShiftSelectedRowIndex
-                                        ? -1
-                                        : 1;
-                                i = this.lastShiftSelectedRowIndex;
-                                for (
-                                    i;
-                                    i !== this.lastNotShiftSelectedRowIndex;
-                                    i = i + dirMod
-                                ) {
-                                    newSelection.splice(newSelection.indexOf(i), 1);
-                                }
+                                newSelection = this.preShiftRowSelection.slice();
+                            } else {
+                                this.preShiftRowSelection = newSelection.slice();
                             }
-                            dirMod =
+
+                            const dirMod: number =
                                 changedRow.rowIndex > this.lastNotShiftSelectedRowIndex
                                     ? 1
                                     : -1;
-                            i = this.lastNotShiftSelectedRowIndex + dirMod;
+                            let i: number = this.lastNotShiftSelectedRowIndex + dirMod;
                             for (i; i !== changedRow.rowIndex + dirMod; i = i + dirMod) {
                                 const selectedRowIndex: number = newSelection.indexOf(i);
                                 if (
@@ -713,26 +702,8 @@ export class DataGrid extends FoundationElement {
                                 ) {
                                     newSelection.push(i);
                                 }
-                                if (
-                                    newSelection.includes(changedRow.rowIndex) &&
-                                    selectedRowIndex !== -1
-                                ) {
-                                    newSelection.splice(selectedRowIndex, 1);
-                                }
-                            }
-
-                            const changeRowIndexInSelectedIndexes = newSelection.indexOf(
-                                changedRow.rowIndex
-                            );
-                            if (newSelection.includes(changedRow.rowIndex)) {
-                                if (changeRowIndexInSelectedIndexes === -1) {
-                                    newSelection.push(changedRow.rowIndex);
-                                }
-                            } else if (changeRowIndexInSelectedIndexes !== -1) {
-                                newSelection.splice(changeRowIndexInSelectedIndexes, 1);
                             }
                         }
-                        this.lastShiftSelectedRowIndex = changedRow.rowIndex;
                         this.selectedRowIndexes = newSelection;
                     } else if (e.detail.ctrlKey) {
                         if (
@@ -752,11 +723,11 @@ export class DataGrid extends FoundationElement {
                             );
                             this.lastNotShiftSelectedRowIndex = -1;
                         }
-                        this.lastShiftSelectedRowIndex = -1;
+                        this.preShiftRowSelection = null;
                         this.selectedRowIndexes = newSelection;
                     } else {
                         this.handleSingleRowSelection(changedRow, changeEventDetail);
-                        this.lastShiftSelectedRowIndex = -1;
+                        this.preShiftRowSelection = null;
                     }
                     break;
             }
