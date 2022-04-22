@@ -2823,9 +2823,9 @@ export class VirtualList extends FoundationElement {
     itemTemplate: ViewTemplate;
     // @internal
     lastRenderedIndex: number;
+    listItemContentsTemplate: ViewTemplate;
     listItemContext: object;
     listItemLoadMode: VirtualListItemLoadMode;
-    listItemTemplate: ViewTemplate;
     orientation: Orientation;
     recycle: boolean;
     protected requestPositionUpdates(): void;
@@ -2858,8 +2858,8 @@ export class VirtualListItem extends FoundationElement {
     idleCallbackQueue: IdleCallbackQueue;
     itemData: object;
     itemIndex: number;
+    listItemContentsTemplate: ViewTemplate;
     listItemContext: VirtualListItemContext;
-    listItemTemplate: ViewTemplate;
     // @internal
     loadContent: boolean;
     // (undocumented)
