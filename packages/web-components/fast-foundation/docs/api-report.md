@@ -2790,7 +2790,6 @@ export type VerticalPosition = "top" | "bottom" | "center" | "unset";
 
 // @public
 export class VirtualList extends FoundationElement {
-    // (undocumented)
     autoResizeItems: boolean;
     autoUpdateMode: VirtualListAutoUpdateMode;
     // @internal (undocumented)
@@ -2825,7 +2824,6 @@ export class VirtualList extends FoundationElement {
     // @internal
     lastRenderedIndex: number;
     listItemContext: object;
-    // (undocumented)
     listItemLoadMode: VirtualListItemLoadMode;
     listItemTemplate: ViewTemplate;
     orientation: Orientation;
